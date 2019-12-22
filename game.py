@@ -1,7 +1,7 @@
 import mcpi.minecraft as minecraft
 mc = minecraft.Minecraft.create()
 
-import mcpi.block as block
+import mcpi.block as block 
 import time
 import random
 from threading import Thread
@@ -10,7 +10,7 @@ gameOver = False
 
 
 ARENAX = 10
-ARENAZ = 30
+ARENAZ = 40
 ARENAY = 4
 arenaPos = mc.player.getTilePos()
 
@@ -49,7 +49,7 @@ def wall2(arenaPos,wallZPos):
             mc.setBlocks(wallPos.x-2, wallPos.y+1, wallPos.z+i, wallPos.x+ARENAX-2, wallPos.y+ARENAY+1, wallPos.z+i, 103)   
             time.sleep(0.5)
         
-        #подъем стен
+        
         for i in wall:
             mc.setBlocks(wallPos.x-2, wallPos.y+1, wallPos.z+i, wallPos.x+ARENAX-2, wallPos.y+ARENAY+1, wallPos.z+i, block.AIR.id)
             mc.setBlocks(wallPos.x-1, wallPos.y+1, wallPos.z+i, wallPos.x+ARENAX-1, wallPos.y+ARENAY+1, wallPos.z+i, 103)  
@@ -61,9 +61,9 @@ def bridge(arenaPos, riverZPos):
     RIVERWIDTH = 6
     BW = 1
     mc.setBlocks(arenaPos.x, arenaPos.y - 2, arenaPos.z + riverZPos, arenaPos.x + ARENAX, arenaPos.y, arenaPos.z + riverZPos + RIVERWIDTH - 1, block.AIR.id)
-    mc.setBlocks(arenaPos.x, arenaPos.y - 3, arenaPos.z + riverZPos, arenaPos.x + ARENAX, arenaPos.y - 3, arenaPos.z + riverZPos + RIVERWIDTH - 1, 24)
-    mc.setBlocks(arenaPos.x, arenaPos.y - 2, arenaPos.z + riverZPos, arenaPos.x + ARENAX, arenaPos.y - 2, arenaPos.z + riverZPos + RIVERWIDTH - 1, 198)
-    bridgePos = minecraft.Vec3(arenaPos.x, arenaPos.y, arenaPos.z + riverZPos + 1)
+    mc.setBlocks(arenaPos.x, arenaPos.y - 3, arenaPos.z + riverZPos, arenaPos.x + ARENAX, arenaPos.y - 4, arenaPos.z + riverZPos + RIVERWIDTH - 1, 24)
+    mc.setBlocks(arenaPos.x, arenaPos.y - 3, arenaPos.z + riverZPos, arenaPos.x + ARENAX, arenaPos.y - 3, arenaPos.z + riverZPos + RIVERWIDTH - 1, 198)
+    bridgePos = minecraft.Vec3(arenaPos.x, arenaPos.y-1, arenaPos.z + riverZPos + 1)
     while not gameOver:
         #в одну сторону
         for i in range(1, ARENAX-1):
@@ -92,7 +92,7 @@ def anvils(arenaPos, anvilsZPos):
         for anvil in anvils:
             mc.setBlock(anvil.x, anvil.y+10, anvil.z, block.WOOL.id, 12)
         time.sleep(0.5)
-
+ 
         for anvil in anvils:
             mc.setBlocks(anvil.x, anvil.y+10, anvil.z, anvil.x, anvil.y+10, anvil.z,145 )
         time.sleep(1)
@@ -101,37 +101,53 @@ def anvils(arenaPos, anvilsZPos):
             mc.setBlocks(anvil.x, anvil.y+1, anvil.z, anvil.x, anvil.y+1, anvil.z, block.AIR.id)
             time.sleep(0.01)
 
+
+def lava(arenaPos,lavaZPos):
+    LW = 1
+    LAVALAKEWIDH = 5
+    lavaLakePos = minecraft.Vec3(arenaPos.x, arenaPos.y-1, arenaPos.z + lavaZPos + 1)
+    mc.setBlocks(arenaPos.x, arenaPos.y, arenaPos.z + lavaZPos-1, arenaPos.x + ARENAX, arenaPos.y, arenaPos.z + lavaZPos + LAVALAKEWIDH - 1+1, 0)
+    while not gameOver:
+        for i in range(1):
+            mc.setBlocks(arenaPos.x, arenaPos.y-1, arenaPos.z + lavaZPos, arenaPos.x + ARENAX, arenaPos.y-1, arenaPos.z + lavaZPos + LAVALAKEWIDH - 1, 0)
+            time.sleep(5) 
+            mc.setBlocks(arenaPos.x, arenaPos.y-1, arenaPos.z + lavaZPos, arenaPos.x + ARENAX, arenaPos.y-1, arenaPos.z + lavaZPos + LAVALAKEWIDH - 1, 11)
+            time.sleep(5)
+                 
+        
+
 def cake(arenaPos, number):
     for diamond in range(0, number):
         x = random.randint(arenaPos.x+1, arenaPos.x + ARENAX-1)
         z = random.randint(arenaPos.z+1, arenaPos.z + ARENAZ-8)
-        mc.setBlock(x, arenaPos.y + 1, z, 169)
+        mc.setBlock(x, arenaPos.y + 1, z, 92)
 
 arena(arenaPos)
 
 
-WALLZ=10
+WALLZ=16
 thread1 = Thread(target = wall, args=(arenaPos, WALLZ))
-WALLZ=10
+WALLZ=16
 thread2 = Thread(target = wall2, args = (arenaPos, WALLZ))
 RIVERZ = 6
 thread3 = Thread (target = bridge, args = (arenaPos,RIVERZ))
-ANVILSZ = 25
+ANVILSZ = 35
 thread4 = Thread(target = anvils, args = (arenaPos,ANVILSZ))
-
+LAVAZ = 27
+thread5 = Thread(target = lava, args = (arenaPos,LAVAZ))
 
 
 thread1.start()
 thread2.start()
 thread3.start()
 thread4.start()
-
+thread5.start()
 
 
 
 LEVELS = 3
 CAKES = [3,5,9]
-TIMEOUTS = [32,27,22]
+TIMEOUTS = [40,57,68]
 level = 0
 points = 0
 #game loop
@@ -145,10 +161,20 @@ while not gameOver:
     while not gameOver and not levelComplete:
 
         pos = mc.player.getTilePos()
-        if pos.y < arenaPos.y:
+        if pos.y+1 < arenaPos.y:
             mc.player.setPos(arenaPos.x + 1, arenaPos.y + 1, arenaPos.z + 1)
 
+            
+        blockType = mc.getBlock(pos.x,pos.y,pos.z)
 
+        
+        if blockType == 11:
+            mc.player.setPos(arenaPos.x + 1, arenaPos.y + 1, arenaPos.z + 1)
+
+        blockType = mc.getBlock(pos.x,pos.y,pos.z)
+        if blockType == 145:
+            mc.player.setPos(arenaPos.x + 1, arenaPos.y + 1, arenaPos.z + 1)
+            
         if pos.z == arenaPos.z + ARENAZ-1 and cakesLeft == 0:
              levelComplete = True
          
@@ -161,7 +187,7 @@ while not gameOver:
         hits = mc.events.pollBlockHits()
         for hit in hits:
             blockHitType =  mc.getBlock(hit.pos.x, hit.pos.y, hit.pos.z)
-            if blockHitType == 169:
+            if blockHitType == 92:
                 mc.setBlock(hit.pos.x,hit.pos.y, hit.pos.z, block.AIR.id)
                 cakesLeft = cakesLeft - 1
 
@@ -176,6 +202,6 @@ while not gameOver:
             thread2.join()
             thread3.join()
             thread4.join()
-
+            thread5.join()
 mc.postToChat("Game Over - Points = " + str(points))
 
